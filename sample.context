@@ -1,0 +1,41 @@
+# 論理演算
+
+TRUE  = ^xy.x
+FALSE = ^xy.y
+IF    = ^BOOL THEN ELSE.``BOOL THEN ELSE
+
+NOT = ^x.``xFALSE TRUE
+AND = ^xy.``xyFALSE
+OR  = ^xy.``xTRUEy
+XOR = ^xy.``x`NOTyy
+
+# チャーチ数
+
+ZERO  = ^fx.x                     # 0
+ONE   = ^fx.`fx                   # 1
+TWO   = ^fx.`f`fx                 # 2
+THREE = ^fx.`f`f`fx               # 3
+
+ISZERO = ^n.``n^_.FALSE TRUE
+
+SUCC = ^n.^fx.`f``nfx             # 後者関数
+PRED = ^nfx.```n^gh.`h`gf^u.x^u.u # 前者関数
+
+PLUS = ^mn.^fx.``mf``nfx
+MULT = ^mn.``m`PLUS n ZERO
+EXP  = ^mn.``m`MULT n ONE
+
+SUB  = ^mn.``nPREDm
+
+# リスト
+
+CONS = ^xyf.``fxy
+CAR  = ^x.`xTRUE
+CDR  = ^x.`xFALSE
+
+NULL   = FALSE
+ISNULL = ^x.``x^_.FALSE TRUE
+
+# 不動点コンビネータ
+
+Y = ^f.`^x.`f`xx^x.`f`xx
