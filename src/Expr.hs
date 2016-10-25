@@ -3,7 +3,10 @@
 module Expr where
 
 import Data.ByteString.Char8 (ByteString)
-import Data.Map.Lazy (Map, empty, member, (!))
+import Data.Set (Set)
+import qualified Data.Set      as Set
+import Data.Map.Lazy (Map, (!))
+import qualified Data.Map.Lazy as Map
 
 
 data Ident = Ident ByteString
@@ -18,7 +21,7 @@ data Expr = Expr :$ Expr
 
 type Context = Map Ident Expr
 
-emptyContext = empty
+emptyContext = Map.empty
 
 --------------------------------------------------------------------------------
 
@@ -62,7 +65,9 @@ resolve x e@(e' :$ e'')
   -- ^x.`M N === ``s ^x.M ^x.N
   | otherwise             = s :$ resolve x e' :$ resolve x e''
 
-resolve x (y :^ e)        = resolve x $ resolve y e
+resolve x e@(y :^ e')
+  | x == y    = k :$ e
+  | otherwise = resolve x $ resolve y e'
 
 --------------------------------------------------------------------------------
 
@@ -80,17 +85,21 @@ x `isFreeIn` (e :$ e') = x `isFreeIn` e || x `isFreeIn` e'
 
 -- | 式に含まれる定義済み変数を展開する
 subst :: Context -> Expr -> Expr
-subst context x@(Var v)
-  | v `member` context  = subst context $ context ! v
-  | otherwise           = x
-subst context (v :^ e)  = v :^ subst context e
-subst context (e :$ e') = subst context e :$ subst context e'
+subst = subst' Set.empty
+
+subst' :: Set Ident -> Context -> Expr -> Expr
+subst' vs context x@(Var v)
+  | v `Set.notMember` vs && v `Map.member` context
+                           = subst context $ context ! v
+  | otherwise              = x
+subst' vs context (v :^ e)  = v :^ subst' (v `Set.insert` vs) context e
+subst' vs context (e :$ e') = subst' vs context e :$ subst' vs context e'
 
 --------------------------------------------------------------------------------
 
 compile :: Context -> Expr -> Expr
 compile context x@(Var v)
-  | v `member` context      = compile context $ subst context x
+  | v `Map.member` context  = compile context $ subst context x
   | otherwise               = x
 compile context l@(_ :^ _)  = compile context $ unlambda l
 compile context (e :$ e')   = compile context e :$ compile context e'
