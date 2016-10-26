@@ -27,17 +27,26 @@ main :: IO ()
 main = hspec $ do
   describe "Parser.ident" $ do
     it "can parse single letter identifier, ex. 'x'" $ do
-      parse ident "" "xSKK" `shouldBe` Right (Ident "x")
+      parse ident "" "x" `shouldBe` Right (Ident "x")
 
     it "can parse multi letter identifier, ex. 'FOO_BAR'" $ do
-      parse ident "" "FOO_BARskk" `shouldBe` Right (Ident "FOO_BAR")
+      parse ident "" "FOO_BAR" `shouldBe` Right (Ident "FOO_BAR")
+
+    it "can parse digit letter identifier, ex. '42'" $ do
+      parse ident "" "42" `shouldBe` Right (Ident "42")
 
   describe "Parser.expr" $ do
-    it "can parse apply statement, ex. '`xy`'" $ do
+    it "can parse apply statement, ex. '`xy'" $ do
       parse expr "" "`xy" `shouldBe` Right (Var x :$ Var y)
+
+    it "can parse apply statement, ex. '`42 x'" $ do
+      parse expr "" "`42x" `shouldBe` Right (Var (Ident "42") :$ Var x)
 
     it "can parse lambda abstraction statement, ex. '^x.x'" $ do
       parse expr "" "^x.x" `shouldBe` Right (x :^ Var x)
+
+    it "can parse lambda abstraction statement, ex. '^42.42'" $ do
+      parse expr "" "^42.42" `shouldBe` Right (Ident "42" :^ Var (Ident "42"))
 
     it "can parse multi variable lambda abstraction statement, '^xy.`yx'" $ do
       parse expr "" "^xy.`yx" `shouldBe` Right (x :^ y :^ Var y :$ Var x)

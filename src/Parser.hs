@@ -24,7 +24,7 @@ ident' :: Parser Ident
 ident' = Ident . singleton <$> lower
 
 ident'' :: Parser Ident
-ident'' = Ident . pack <$> many1 (upper <|> char '_')
+ident'' = Ident . pack <$> many1 (upper <|> digit <|> char '_')
 
 --------------------------------------------------------------------------------
 
