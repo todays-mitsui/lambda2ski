@@ -114,6 +114,11 @@ main = hspec $ do
       subst context (Var (Ident "FOO"))
         `shouldBe` Var (Ident "FOO")
 
+    it "dosent substitute undefined variable" $ do
+      Right context <- liftIO $ parse P.context "" <$> BS.readFile "test/sample.context"
+      subst context (Var (Ident "NAMED"))
+        `shouldBe` (Ident "NAMED" :^ Var (Ident "NAMED") :$ Var (Ident "NAMED"))
+
   describe "Expr.compile" $ do
     it "compile ISZERO to SKI Combinator" $ do
       Right context <- liftIO $ parse P.context "" <$> BS.readFile "test/sample.context"
@@ -124,6 +129,11 @@ main = hspec $ do
       Right context <- liftIO $ parse P.context "" <$> BS.readFile "test/sample.context"
       compile context (Var (Ident "FOO"))
         `shouldBe` Var (Ident "FOO")
+
+    it "dosent compile undefined variable" $ do
+      Right context <- liftIO $ parse P.context "" <$> BS.readFile "test/sample.context"
+      compile context (Var (Ident "NAMED"))
+        `shouldBe` (s :$ i :$ i)
 
   describe "PPrint.pp" $ do
     context "when pp(s :$ k :$ k)" $ do
