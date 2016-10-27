@@ -31,5 +31,8 @@ ski src nosubst code = do
 loadContext :: Maybe String -> IO Context
 loadContext Nothing         = return emptyContext
 loadContext (Just filepath) = do
-  Right context <- parse context "" <$> BS.readFile filepath
-  return context
+  eitherContext <- parse context "" <$> BS.readFile filepath
+  case eitherContext of
+       Left  parseError -> do putStrLn . show $ parseError
+                              return emptyContext
+       Right context    -> return context
